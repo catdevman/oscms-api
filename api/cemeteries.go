@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/catdevman/oscms-api/models"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -37,13 +38,9 @@ func (api *API) CemeteriesGetOne(w http.ResponseWriter, r *http.Request) {
 func (api *API) CemeteriesGetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	results := []CemeteryJSON{}
-	result := CemeteryJSON{}
 	cemeteries, err := api.cemeteries.FindAllCemeteries()
 	for _, c := range cemeteries {
-		result = CemeteryJSON{}
-		result.ID = c.GetId().Hex()
-		result.Name = c.Name
-		result.PhoneNumber = c.PrimaryPhone
+		result := AssembleCemetery(CemeteryJSON{}, &c)
 		results = append(results, result)
 	}
 	if err != nil {
@@ -73,9 +70,19 @@ func (api *API) CemeteriesSave(w http.ResponseWriter, r *http.Request) {
 		DBError(w, err)
 		return
 	}
+
+	result := AssembleCemetery(CemeteryJSON{}, cemetery)
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(cemetery); err != nil {
+	if err := json.NewEncoder(w).Encode(result); err != nil {
 		JSONDecodeError(w, err)
 		return
 	}
+}
+
+func AssembleCemetery(jsonData CemeteryJSON, c *models.Cemetery) CemeteryJSON {
+	jsonData.ID = c.GetId().Hex()
+	jsonData.Name = c.Name
+	jsonData.PhoneNumber = c.PrimaryPhone
+	return jsonData
 }
