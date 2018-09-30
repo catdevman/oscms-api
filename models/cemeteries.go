@@ -62,3 +62,9 @@ func (state *CemeteryManager) SaveCemetery(name, phoneNumber string) (*Cemetery,
 	}
 	return c, err
 }
+
+// UpdateCemetery -
+func (state *CemeteryManager) UpdateCemetery(cemetery *Cemetery) error {
+	err := state.db.Collection(collection).Save(cemetery)
+	return err
+}

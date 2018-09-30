@@ -80,9 +80,32 @@ func (api *API) CemeteriesSave(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AssembleCemetery(jsonData CemeteryJSON, c *models.Cemetery) CemeteryJSON {
-	jsonData.ID = c.GetId().Hex()
-	jsonData.Name = c.Name
-	jsonData.PhoneNumber = c.PrimaryPhone
-	return jsonData
+//CemeteriesUpdate -
+func (api *API) CemeteriesUpdate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	v := mux.Vars(r)
+	cemetery, err := api.cemeteries.FindCemetery(v["id"])
+	if err != nil {
+		DBError(w, err)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	jsondata := CemeteryJSON{}
+	_ = decoder.Decode(&jsondata)
+	cemetery.Name = jsondata.Name
+	cemetery.PrimaryPhone = jsondata.PhoneNumber
+	err = api.cemeteries.UpdateCemetery(cemetery)
+	if err != nil {
+		DBError(w, err)
+		return
+	}
+}
+
+// AssembleCemetery -
+func AssembleCemetery(data CemeteryJSON, c *models.Cemetery) CemeteryJSON {
+	data.ID = c.GetId().Hex()
+	data.Name = c.Name
+	data.PhoneNumber = c.PrimaryPhone
+	return data
 }

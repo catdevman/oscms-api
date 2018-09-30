@@ -10,16 +10,12 @@ type DB struct {
 }
 
 // NewBongoDB - mongo database
-func NewBongoDB(connectionString, databaseName string) *DB {
+func NewBongoDB(connectionString, databaseName string) (*DB, error) {
 	config := &bongo.Config{
 		ConnectionString: connectionString,
 		Database:         databaseName,
 	}
 	connection, err := bongo.Connect(config)
 
-	if err != nil {
-		panic(err)
-	}
-
-	return &DB{connection}
+	return &DB{connection}, err
 }

@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	db := models.NewBongoDB("localhost", "oscms")
-	err := db.Connect()
+	db, err := models.NewBongoDB("localhost", "oscms")
 	if err != nil {
 		panic(err)
 	}

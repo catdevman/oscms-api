@@ -15,6 +15,7 @@ func NewRoutes(api *api.API) *mux.Router {
 	a := mux.PathPrefix("/api").Subrouter()
 
 	a.HandleFunc("/cemeteries/{id}", api.CemeteriesGetOne).Methods("GET")
+	a.HandleFunc("/cemeteries/{id}", api.CemeteriesUpdate).Methods("PATCH")
 
 	a.HandleFunc("/cemeteries", api.CemeteriesSave).Methods("POST")
 
