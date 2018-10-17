@@ -5,7 +5,7 @@ import (
 	"github.com/go-bongo/bongo"
 )
 
-const collection = "cemeteries"
+const CemeteriesCollection = "cemeteries"
 
 // Cemetery -
 type Cemetery struct {
@@ -32,7 +32,7 @@ func NewCemeteryManager(db *DB) (*CemeteryManager, error) {
 // FindCemetery -
 func (state *CemeteryManager) FindCemetery(id string) (*Cemetery, error) {
 	c := &Cemetery{}
-	err := state.db.Connection.Collection(collection).FindById(bson.ObjectIdHex(id), c)
+	err := state.db.Connection.Collection(CemeteriesCollection).FindById(bson.ObjectIdHex(id), c)
 	return c, err
 }
 
@@ -40,7 +40,7 @@ func (state *CemeteryManager) FindCemetery(id string) (*Cemetery, error) {
 func (state *CemeteryManager) FindAllCemeteries() ([]Cemetery, error) {
 	r := []Cemetery{}
 	c := Cemetery{}
-	results := state.db.Connection.Collection(collection).Find(bson.M{})
+	results := state.db.Connection.Collection(CemeteriesCollection).Find(bson.M{})
 	err := results.Error
 	for results.Next(&c) {
 		r = append(r, c)
@@ -54,7 +54,7 @@ func (state *CemeteryManager) SaveCemetery(name, phoneNumber string) (*Cemetery,
 		Name:         name,
 		PrimaryPhone: phoneNumber,
 	}
-	err := state.db.Connection.Collection(collection).Save(c)
+	err := state.db.Connection.Collection(CemeteriesCollection).Save(c)
 	if err != nil {
 		if vErr, ok := err.(*bongo.ValidationError); ok {
 			err = vErr
@@ -65,6 +65,6 @@ func (state *CemeteryManager) SaveCemetery(name, phoneNumber string) (*Cemetery,
 
 // UpdateCemetery -
 func (state *CemeteryManager) UpdateCemetery(cemetery *Cemetery) error {
-	err := state.db.Collection(collection).Save(cemetery)
+	err := state.db.Collection(CemeteriesCollection).Save(cemetery)
 	return err
 }
