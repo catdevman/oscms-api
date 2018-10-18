@@ -26,5 +26,11 @@ func NewRoutes(api *api.API) *mux.Router {
 	a.HandleFunc("/contacts", api.ContactsSave).Methods("POST")
 	a.HandleFunc("/contacts", api.ContactsGetAll).Methods("GET")
 
+	// graves section
+	a.HandleFunc("/graves/{id}", api.GravesGetOne).Methods("GET")
+	a.HandleFunc("/graves/{id}", api.GravesUpdate).Methods("PATCH")
+	a.HandleFunc("/graves", api.GravesSave).Methods("POST")
+	a.HandleFunc("/graves", api.GravesGetAll).Methods("GET")
+
 	return mux
 }
