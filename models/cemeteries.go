@@ -5,6 +5,7 @@ import (
 	"github.com/go-bongo/bongo"
 )
 
+// CemeteriesCollection -
 const CemeteriesCollection = "cemeteries"
 
 // Cemetery -

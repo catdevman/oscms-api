@@ -5,6 +5,7 @@ import (
 	"github.com/go-bongo/bongo"
 )
 
+// ContactsCollection -
 const ContactsCollection = "contacts"
 
 // Contact -
