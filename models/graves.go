@@ -20,6 +20,14 @@ type GraveManager struct {
 	db *DB
 }
 
+// GraveRepository -
+type GraveRepository interface {
+	FindGrave(id string) (*Grave, error)
+	FindAllGraves() ([]Grave, error)
+	SaveGrave(cemeteryID bson.ObjectId, Location string) (*Grave, error)
+	UpdateGrave(grave *Grave) error
+}
+
 // NewGraveManager - Create a new *GraveManager that can be used for managing cemeteries.
 func NewGraveManager(db *DB) (*GraveManager, error) {
 

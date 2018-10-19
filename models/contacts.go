@@ -20,6 +20,14 @@ type ContactManager struct {
 	db *DB
 }
 
+// ContactRepository -
+type ContactRepository interface {
+	FindContact(id string) (*Contact, error)
+	FindAllContacts() ([]Contact, error)
+	SaveContact(name, phoneNumber string) (*Contact, error)
+	UpdateContact(cemetery *Contact) error
+}
+
 // NewContactManager - Create a new *ContactManager that can be used for managing cemeteries.
 func NewContactManager(db *DB) (*ContactManager, error) {
 

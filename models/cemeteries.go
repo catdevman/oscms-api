@@ -20,6 +20,14 @@ type CemeteryManager struct {
 	db *DB
 }
 
+// CemeteryRepository -
+type CemeteryRepository interface {
+	FindCemetery(id string) (*Cemetery, error)
+	FindAllCemeteries() ([]Cemetery, error)
+	SaveCemetery(name, phoneNumber string) (*Cemetery, error)
+	UpdateCemetery(cemetery *Cemetery) error
+}
+
 // NewCemeteryManager - Create a new *CemeteryManager that can be used for managing cemeteries.
 func NewCemeteryManager(db *DB) (*CemeteryManager, error) {
 
