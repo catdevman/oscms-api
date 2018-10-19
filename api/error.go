@@ -10,20 +10,26 @@ type err struct {
 	Details string `json:"details"`
 }
 
+// JSONDecodeErrorString -
+const JSONDecodeErrorString = "Problem Decoding JSON"
+
+// DBErrorString -
+const DBErrorString = "Problem with database"
+
 // JSONDecodeError -
 func JSONDecodeError(w http.ResponseWriter, e error) {
-	w.WriteHeader(http.StatusGone)
+	w.WriteHeader(http.StatusInternalServerError)
 	json.NewEncoder(w).Encode(err{
-		Status:  "Problem Decoding JSON",
+		Status:  JSONDecodeErrorString,
 		Details: e.Error(),
 	})
 }
 
 // DBError -
 func DBError(w http.ResponseWriter, e error) {
-	w.WriteHeader(http.StatusGone)
+	w.WriteHeader(http.StatusInternalServerError)
 	json.NewEncoder(w).Encode(err{
-		Status:  "Problem with database",
+		Status:  DBErrorString,
 		Details: e.Error(),
 	})
 }
