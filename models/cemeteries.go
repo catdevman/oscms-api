@@ -22,10 +22,10 @@ type CemeteryManager struct {
 
 // CemeteryRepository -
 type CemeteryRepository interface {
-	FindCemetery(id string) (*Cemetery, error)
-	FindAllCemeteries() ([]Cemetery, error)
-	SaveCemetery(name, phoneNumber string) (*Cemetery, error)
-	UpdateCemetery(cemetery *Cemetery) error
+	Find(id string) (*Cemetery, error)
+	FindAll() ([]Cemetery, error)
+	Save(name, phoneNumber string) (*Cemetery, error)
+	Update(cemetery *Cemetery) error
 }
 
 // NewCemeteryManager - Create a new *CemeteryManager that can be used for managing cemeteries.
@@ -57,12 +57,8 @@ func (state *CemeteryManager) FindAllCemeteries() ([]Cemetery, error) {
 	return r, err
 }
 
-// SaveCemetery -
-func (state *CemeteryManager) SaveCemetery(name, phoneNumber string) (*Cemetery, error) {
-	c := &Cemetery{
-		Name:         name,
-		PrimaryPhone: phoneNumber,
-	}
+// Save -
+func (state *CemeteryManager) Save(c *Cemetery) (*Cemetery, error) {
 	err := state.db.Connection.Collection(CemeteriesCollection).Save(c)
 	if err != nil {
 		if vErr, ok := err.(*bongo.ValidationError); ok {

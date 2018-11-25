@@ -22,10 +22,10 @@ type ContactManager struct {
 
 // ContactRepository -
 type ContactRepository interface {
-	FindContact(id string) (*Contact, error)
-	FindAllContacts() ([]Contact, error)
-	SaveContact(name, phoneNumber string) (*Contact, error)
-	UpdateContact(cemetery *Contact) error
+	Find(id string) (*Contact, error)
+	FindAll() ([]Contact, error)
+	Save(contact *Contact) (*Contact, error)
+	Update(contact *Contact) error
 }
 
 // NewContactManager - Create a new *ContactManager that can be used for managing cemeteries.
@@ -38,15 +38,15 @@ func NewContactManager(db *DB) (*ContactManager, error) {
 	return &contactMgr, nil
 }
 
-// FindContact -
-func (state *ContactManager) FindContact(id string) (*Contact, error) {
+// Find -
+func (state *ContactManager) Find(id string) (*Contact, error) {
 	c := &Contact{}
 	err := state.db.Connection.Collection(ContactsCollection).FindById(bson.ObjectIdHex(id), c)
 	return c, err
 }
 
-// FindAllContacts -
-func (state *ContactManager) FindAllContacts() ([]Contact, error) {
+// FindAll -
+func (state *ContactManager) FindAll() ([]Contact, error) {
 	r := []Contact{}
 	c := Contact{}
 	results := state.db.Connection.Collection(ContactsCollection).Find(bson.M{})
@@ -57,12 +57,8 @@ func (state *ContactManager) FindAllContacts() ([]Contact, error) {
 	return r, err
 }
 
-// SaveContact -
-func (state *ContactManager) SaveContact(name, phoneNumber string) (*Contact, error) {
-	c := &Contact{
-		Name:         name,
-		PrimaryPhone: phoneNumber,
-	}
+// Save -
+func (state *ContactManager) Save(c *Contact) (*Contact, error) {
 	err := state.db.Connection.Collection(ContactsCollection).Save(c)
 	if err != nil {
 		if vErr, ok := err.(*bongo.ValidationError); ok {
@@ -72,8 +68,8 @@ func (state *ContactManager) SaveContact(name, phoneNumber string) (*Contact, er
 	return c, err
 }
 
-// UpdateContact -
-func (state *ContactManager) UpdateContact(contact *Contact) error {
+// Update -
+func (state *ContactManager) Update(contact *Contact) error {
 	err := state.db.Collection(ContactsCollection).Save(contact)
 	return err
 }

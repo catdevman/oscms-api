@@ -4,7 +4,7 @@ import (
 	"github.com/go-bongo/bongo"
 )
 
-// DB abstraction
+// DB abstraction -
 type DB struct {
 	*bongo.Connection
 }

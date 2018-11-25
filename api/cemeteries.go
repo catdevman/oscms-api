@@ -2,31 +2,25 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/catdevman/oscms-api/assemblers"
+	"github.com/catdevman/oscms-api/dtos"
 	"github.com/catdevman/oscms-api/models"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-// CemeteryJSON -
-type CemeteryJSON struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	PhoneNumber string `json:"phoneNumber"`
-}
-
 //CemeteriesGetOne -
 func (api *API) CemeteriesGetOne(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	v := mux.Vars(r)
-	result := CemeteryJSON{}
+	result := dtos.Cemetery{}
 	cemetery, err := api.cemeteries.FindCemetery(v["id"])
 	if err != nil {
 		DBError(w, err)
 		return
 	}
-	result.ID = cemetery.GetId().Hex()
-	result.Name = cemetery.Name
-	result.PhoneNumber = cemetery.PrimaryPhone
+	cemeteryAssembler := assemblers.Cemetery{}
+	result = cemeteryAssembler.ModelToDto(cemetery, result)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		JSONDecodeError(w, err)
@@ -37,10 +31,11 @@ func (api *API) CemeteriesGetOne(w http.ResponseWriter, r *http.Request) {
 //CemeteriesGetAll -
 func (api *API) CemeteriesGetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	results := []CemeteryJSON{}
+	results := []dtos.Cemetery{}
 	cemeteries, err := api.cemeteries.FindAllCemeteries()
+	cemeteryAssembler := assemblers.Cemetery{}
 	for _, c := range cemeteries {
-		result := AssembleCemetery(CemeteryJSON{}, &c)
+		result := cemeteryAssembler.ModelToDto(&c, dtos.Cemetery{})
 		results = append(results, result)
 	}
 	if err != nil {
@@ -57,21 +52,23 @@ func (api *API) CemeteriesGetAll(w http.ResponseWriter, r *http.Request) {
 func (api *API) CemeteriesSave(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	decoder := json.NewDecoder(r.Body)
-	jsondata := CemeteryJSON{}
+	jsondata := dtos.Cemetery{}
 	err := decoder.Decode(&jsondata)
 
 	if err != nil || jsondata.Name == "" || jsondata.PhoneNumber == "" {
 		http.Error(w, "Missing name or phoneNumber", http.StatusBadRequest)
 		return
 	}
+	cemeteryAssembler := assemblers.Cemetery{}
 
-	cemetery, err := api.cemeteries.SaveCemetery(jsondata.Name, jsondata.PhoneNumber)
+	c := cemeteryAssembler.DtoToModel(jsondata, &models.Cemetery{})
+	cemetery, err := api.cemeteries.Save(c)
 	if err != nil {
 		DBError(w, err)
 		return
 	}
 
-	result := AssembleCemetery(CemeteryJSON{}, cemetery)
+	result := cemeteryAssembler.ModelToDto(cemetery, dtos.Cemetery{})
 
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(result); err != nil {
@@ -91,7 +88,7 @@ func (api *API) CemeteriesUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	jsondata := CemeteryJSON{}
+	jsondata := dtos.Cemetery{}
 	_ = decoder.Decode(&jsondata)
 	cemetery.Name = jsondata.Name
 	cemetery.PrimaryPhone = jsondata.PhoneNumber
@@ -100,12 +97,4 @@ func (api *API) CemeteriesUpdate(w http.ResponseWriter, r *http.Request) {
 		DBError(w, err)
 		return
 	}
-}
-
-// AssembleCemetery -
-func AssembleCemetery(data CemeteryJSON, c *models.Cemetery) CemeteryJSON {
-	data.ID = c.GetId().Hex()
-	data.Name = c.Name
-	data.PhoneNumber = c.PrimaryPhone
-	return data
 }

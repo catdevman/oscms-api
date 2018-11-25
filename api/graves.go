@@ -2,24 +2,20 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/catdevman/oscms-api/assemblers"
+	"github.com/catdevman/oscms-api/dtos"
 	"github.com/catdevman/oscms-api/models"
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
-
-// GraveJSON -
-type GraveJSON struct {
-	ID       string `json:"id"`
-	Cemetery string `json:"cemetery"`
-	Location string `json:"location"`
-}
 
 //GravesGetOne -
 func (api *API) GravesGetOne(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	v := mux.Vars(r)
-	result := GraveJSON{}
+	result := dtos.Grave{}
 	grave, err := api.graves.FindGrave(v["id"])
 	if err != nil {
 		DBError(w, err)
@@ -38,10 +34,12 @@ func (api *API) GravesGetOne(w http.ResponseWriter, r *http.Request) {
 //GravesGetAll -
 func (api *API) GravesGetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	results := []GraveJSON{}
-	graves, err := api.graves.FindAllGraves()
+	results := []dtos.Grave{}
+	graves, err := api.graves.FindAll()
+
+	graveAssembler := assemblers.Grave{}
 	for _, g := range graves {
-		result := AssembleGrave(GraveJSON{}, &g)
+		result := graveAssembler.ModelToDto(&g, dtos.Grave{})
 		results = append(results, result)
 	}
 	if err != nil {
@@ -58,21 +56,24 @@ func (api *API) GravesGetAll(w http.ResponseWriter, r *http.Request) {
 func (api *API) GravesSave(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	decoder := json.NewDecoder(r.Body)
-	jsondata := GraveJSON{}
-	err := decoder.Decode(&jsondata)
+	graveDto := dtos.Grave{}
+	err := decoder.Decode(&graveDto)
 
-	if err != nil || jsondata.Cemetery == "" || jsondata.Location == "" {
+	if err != nil || graveDto.Cemetery == "" || graveDto.Location == "" {
+		log.Fatal(err)
 		http.Error(w, "Missing cemetery or location", http.StatusBadRequest)
 		return
 	}
 
-	grave, err := api.graves.SaveGrave(bson.ObjectIdHex(jsondata.Cemetery), jsondata.Location)
+	graveAssembler := assemblers.Grave{}
+	graveModel := graveAssembler.DtoToModel(graveDto, &models.Grave{})
+	grave, err := api.graves.Save(graveModel)
 	if err != nil {
 		DBError(w, err)
 		return
 	}
 
-	result := AssembleGrave(GraveJSON{}, grave)
+	result := graveAssembler.ModelToDto(grave, dtos.Grave{})
 
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(result); err != nil {
@@ -92,21 +93,13 @@ func (api *API) GravesUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	jsondata := GraveJSON{}
+	jsondata := dtos.Grave{}
 	_ = decoder.Decode(&jsondata)
 	grave.Cemetery = bson.ObjectIdHex(jsondata.Cemetery)
 	grave.Location = jsondata.Location
-	err = api.graves.UpdateGrave(grave)
+	err = api.graves.Update(grave)
 	if err != nil {
 		DBError(w, err)
 		return
 	}
-}
-
-// AssembleGrave -
-func AssembleGrave(data GraveJSON, c *models.Grave) GraveJSON {
-	data.ID = c.GetId().Hex()
-	data.Cemetery = c.Cemetery.Hex()
-	data.Location = c.Location
-	return data
 }

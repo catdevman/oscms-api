@@ -13,6 +13,8 @@ type Grave struct {
 	bongo.DocumentBase `bson:",inline"`
 	Cemetery           bson.ObjectId
 	Location           string
+	Owners             []string
+	Positions          []Position
 }
 
 // GraveManager -
@@ -22,20 +24,20 @@ type GraveManager struct {
 
 // GraveRepository -
 type GraveRepository interface {
-	FindGrave(id string) (*Grave, error)
-	FindAllGraves() ([]Grave, error)
-	SaveGrave(cemeteryID bson.ObjectId, Location string) (*Grave, error)
-	UpdateGrave(grave *Grave) error
+	Find(id string) (*Grave, error)
+	FindAll() ([]Grave, error)
+	Save(g *Grave) (*Grave, error)
+	Update(grave *Grave) error
 }
 
-// NewGraveManager - Create a new *GraveManager that can be used for managing cemeteries.
+// NewGraveManager - Create a new GraveManager that can be used for managing cemeteries.
 func NewGraveManager(db *DB) (*GraveManager, error) {
 
-	contactMgr := GraveManager{}
+	graveMgr := GraveManager{}
 
-	contactMgr.db = db
+	graveMgr.db = db
 
-	return &contactMgr, nil
+	return &graveMgr, nil
 }
 
 // FindGrave -
@@ -45,8 +47,8 @@ func (state *GraveManager) FindGrave(id string) (*Grave, error) {
 	return c, err
 }
 
-// FindAllGraves -
-func (state *GraveManager) FindAllGraves() ([]Grave, error) {
+// FindAll -
+func (state *GraveManager) FindAll() ([]Grave, error) {
 	r := []Grave{}
 	c := Grave{}
 	results := state.db.Connection.Collection(GravesCollection).Find(bson.M{})
@@ -57,12 +59,8 @@ func (state *GraveManager) FindAllGraves() ([]Grave, error) {
 	return r, err
 }
 
-// SaveGrave -
-func (state *GraveManager) SaveGrave(cemeteryID bson.ObjectId, location string) (*Grave, error) {
-	g := &Grave{
-		Cemetery: cemeteryID,
-		Location: location,
-	}
+// Save -
+func (state *GraveManager) Save(g *Grave) (*Grave, error) {
 	err := state.db.Connection.Collection(GravesCollection).Save(g)
 	if err != nil {
 		if vErr, ok := err.(*bongo.ValidationError); ok {
@@ -72,8 +70,8 @@ func (state *GraveManager) SaveGrave(cemeteryID bson.ObjectId, location string) 
 	return g, err
 }
 
-// UpdateGrave -
-func (state *GraveManager) UpdateGrave(grave *Grave) error {
+// Update -
+func (state *GraveManager) Update(grave *Grave) error {
 	err := state.db.Collection(GravesCollection).Save(grave)
 	return err
 }
